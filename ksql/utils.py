@@ -99,6 +99,9 @@ def process_row(row, column_names):
     for column in column_values:
         result[column_names[index]["name"]] = column
         index += 1
+    
+    if "tombstone" in row_obj["row"]:
+        result["tombstone"] = row_obj["row"]["tombstone"]
 
     return result
 
