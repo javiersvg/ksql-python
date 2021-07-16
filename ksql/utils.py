@@ -72,7 +72,7 @@ def get_dependent_queries(api_client, stream_name):
 def parse_columns(columns_str):
     simplified_columns = remove_sub_types(columns_str)
     columns_without_structs = simplify_struct_types(simplified_columns)
-    regex = r"(?<!\<)`(?P<name>[A-Z_]+)` (?P<type>[A-z]+)[\<, \"](?!\>)"
+    regex = r"(?<!\<)`(?P<name>[A-z_]+)` (?P<type>[A-z]+)[\<, \"](?!\>)"
     result = []
 
     matches = re.finditer(regex, columns_without_structs)

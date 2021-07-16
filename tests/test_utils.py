@@ -220,3 +220,17 @@ class TestKSQLUtils(unittest.TestCase):
 
         first_row = next(rows)
         self.assertEqual(first_row["tombstone"], True)
+
+    def test_process_query_result_parse_rows_lower_case(self):
+        def mock_generator():
+            header_str = """[{"header":{"queryId":"none","schema":"`order_id` INTEGER"}},"""
+            row_str = """{"row":{"columns":[3]}},\n"""
+
+            results = [header_str, row_str]
+            for a in results:
+                yield a
+
+        rows = utils.process_query_result(mock_generator(), True)
+
+        first_row = next(rows)
+        self.assertEqual(first_row["order_id"], 3)
