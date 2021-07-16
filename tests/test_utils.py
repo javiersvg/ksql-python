@@ -168,3 +168,41 @@ class TestKSQLUtils(unittest.TestCase):
         self.assertEqual(first_row["MY_ARRAY"], [1, 2, 3])
         self.assertEqual(first_row["TOTAL_AMOUNT"], 43)
         self.assertEqual(first_row["CUSTOMER_NAME"], "Palo Alto")
+
+    def test_process_query_result_parse_rows_struct_with_3_elements(self):
+        def mock_generator():
+            header_str = """[{"header":{"queryId":"none","schema":"`ORDER_ID` INTEGER, `MY_STRUCT` STRUCT<`A` INTEGER, `B` STRING, `C` STRING>, `MY_MAP` MAP<STRING, INTEGER>, `MY_ARRAY` ARRAY<INTEGER>, `TOTAL_AMOUNT` DOUBLE, `CUSTOMER_NAME` STRING"}},"""
+            row_str = """{"row":{"columns":[3,{"A":1,"B":"bbb", "C":"ccc"},{"x":3,"y":4},[1,2,3],43.0,"Palo Alto"]}},\n"""
+
+            results = [header_str, row_str]
+            for a in results:
+                yield a
+
+        rows = utils.process_query_result(mock_generator(), True)
+
+        first_row = next(rows)
+        self.assertEqual(first_row["ORDER_ID"], 3)
+        self.assertEqual(first_row["MY_STRUCT"], {"A": 1, "B": "bbb", "C": "ccc"})
+        self.assertEqual(first_row["MY_MAP"], {"x": 3, "y": 4})
+        self.assertEqual(first_row["MY_ARRAY"], [1, 2, 3])
+        self.assertEqual(first_row["TOTAL_AMOUNT"], 43)
+        self.assertEqual(first_row["CUSTOMER_NAME"], "Palo Alto")
+
+    def test_process_query_result_parse_rows_struct_with_array(self):
+        def mock_generator():
+            header_str = """[{"header":{"queryId":"none","schema":"`ORDER_ID` INTEGER, `MY_STRUCT` STRUCT<`A` INTEGER, `B` ARRAY<STRING>>, `MY_MAP` MAP<STRING, INTEGER>, `MY_ARRAY` ARRAY<INTEGER>, `TOTAL_AMOUNT` DOUBLE, `CUSTOMER_NAME` STRING"}},"""
+            row_str = """{"row":{"columns":[3,{"A":1,"B":["bbb"]},{"x":3,"y":4},[1,2,3],43.0,"Palo Alto"]}},\n"""
+
+            results = [header_str, row_str]
+            for a in results:
+                yield a
+
+        rows = utils.process_query_result(mock_generator(), True)
+
+        first_row = next(rows)
+        self.assertEqual(first_row["ORDER_ID"], 3)
+        self.assertEqual(first_row["MY_STRUCT"], {"A": 1, "B": ["bbb"]})
+        self.assertEqual(first_row["MY_MAP"], {"x": 3, "y": 4})
+        self.assertEqual(first_row["MY_ARRAY"], [1, 2, 3])
+        self.assertEqual(first_row["TOTAL_AMOUNT"], 43)
+        self.assertEqual(first_row["CUSTOMER_NAME"], "Palo Alto")
